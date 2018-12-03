@@ -6,6 +6,7 @@ import evaluation
 # TODO: load training data
 
 for classifier in ['myclassifier1', 'myclassifier2', 'myclassifier3']: # You may rename the names of the classifiers to something more descriptive
+    print(classifier)
     if classifier == 'myclassifier1':
         print('Training ' + classifier)
         # TODO: extract features for training classifier1
@@ -22,7 +23,19 @@ for classifier in ['myclassifier1', 'myclassifier2', 'myclassifier3']: # You may
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
 
-        predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral', '742616104384772304': 'neutral', '102313285628711403': 'neutral', '653274888624828198': 'neutral'} # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
+        predictions = {'163361196206957578': 'negative',
+                       '768006053969268950': 'negative',
+                       '742616104384772304': 'negative',
+                       '102313285628711403': 'negative',
+                       '653274888624828198': 'negative',
+                       '364323072843019872': 'positive',
+                       '063115054245201986': 'positive'}
+        # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
+
+        # predictions = {}
+        print(testset)
+
+
         evaluation.evaluate(predictions, testset, classifier)
 
         evaluation.confusion(predictions, testset, classifier)
