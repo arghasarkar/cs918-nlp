@@ -23,7 +23,7 @@ for classifier in ['myclassifier1', 'myclassifier2', 'myclassifier3']: # You may
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
 
-        predictions = {'163361196206957578': 'negative',
+        predictions = {'163361196206957578': 'neutral',
                        '768006053969268950': 'negative',
                        '742616104384772304': 'negative',
                        '102313285628711403': 'negative',
