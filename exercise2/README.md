@@ -9,3 +9,11 @@ This has been used for a naive lexicon classifier as a base.
 Repository: https://github.com/hitesh915/sentimentstrength/
 
 Direct link: https://raw.githubusercontent.com/hitesh915/sentimentstrength/master/wordwithStrength.txt
+
+# Source declarations
+
+Sources for code or ideas found online or other sources are mentioned here:
+
+1) Regex for matching Twitter's user mention was found in a StackOverflow post. 
+
+```^(?!.*\bRT\b)(?:.+\s)?@\w+``` found on [Regex validation twitter mention.](https://stackoverflow.com/questions/7150652/regex-valid-twitter-mention) Date accessed: 6th December 2018.
