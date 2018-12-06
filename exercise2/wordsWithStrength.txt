@@ -1,4 +1,4 @@
-happyface  1
+happyface	1
 epic	1
 good	1
 upright	1
@@ -18542,4 +18542,4 @@ denigrating	-1
 defamatory	-1
 calumnious	-1
 calumniatory	-1
-sadface -1
+sadface	-1
