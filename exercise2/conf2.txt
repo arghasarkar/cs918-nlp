@@ -1,0 +1,56 @@
+Training lex_classifier
+twitter-test1.txt (lex_classifier): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.416     0.158     0.426
+
+twitter-test2.txt (lex_classifier): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.530     0.109     0.361
+
+twitter-test3.txt (lex_classifier): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.434     0.153     0.413
+
+Training myclassifier2
+twitter-test1.txt (myclassifier2): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.416     0.158     0.426
+
+twitter-test2.txt (myclassifier2): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.530     0.109     0.361
+
+twitter-test3.txt (myclassifier2): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.434     0.153     0.413
+
+Training myclassifier3
+twitter-test1.txt (myclassifier3): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.416     0.158     0.426
+
+twitter-test2.txt (myclassifier3): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.530     0.109     0.361
+
+twitter-test3.txt (myclassifier3): 0.000
+            positive  negative  neutral
+positive    0.000     0.000     0.000
+negative    0.000     0.000     0.000
+neutral     0.434     0.153     0.413
