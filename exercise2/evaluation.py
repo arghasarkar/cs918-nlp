@@ -10,7 +10,6 @@ def read_test(testset):
 
   return id_gts
 
-
 def confusion(id_preds, testset, classifier):
   id_gts = read_test(testset)
 
@@ -46,7 +45,6 @@ def confusion(id_preds, testset, classifier):
     print('')
 
   print('')
-
 
 def evaluate(id_preds, testset, classifier):
   id_gts = read_test(testset)

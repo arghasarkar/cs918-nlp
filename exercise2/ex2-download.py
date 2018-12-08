@@ -314,52 +314,6 @@ c.print_summary_of_corpus()
 import pprint
 
 
-class X:
-    def __init__(self, val):
-        self.val = val
-
-    def get_val(self):
-        return self.val
-
-    def set_val(self, val):
-        self.val = val
-
-    def __str__(self):
-        return "Value: {}".format(str(self.val))
-
-
-dic = {}
-new = {}
-
-x = X(0)
-y = X(2)
-
-dic["0"] = x
-dic["1"] = y
-
-new["0"] = x
-new["1"] = y
-
-for key in dic:
-    print("Key: {} Val: {}".format(str(key), str(dic[key])))
-
-a = dic["0"]
-b = dic["1"]
-
-a.set_val(100)
-b.set_val(1001)
-
-print("printing from old dict:")
-some = dic["0"]
-some.val = "Argha"
-
-for key in dic:
-    print("Key: {} Val: {}".format(str(key), str(dic[key])))
-
-print("printing from new dict:")
-
-for key in new:
-    print("Key: {} Val: {}".format(str(key), str(new[key])))
 
 
 # # Lexicon classifier class
@@ -483,7 +437,7 @@ for classifier in ['lex_classifier', 'myclassifier2',
 
         td1 = TestData(testset, test_corpus, lc)
         predictions = td1.run_classifier()
-        print(predictions)
+        # print(predictions)
         #         predictions = {}
 
         #         if '163361196206957578' in predictions:
