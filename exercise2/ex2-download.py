@@ -330,7 +330,7 @@ c.print_summary_of_corpus()
 #
 # For the second classifier, a count vector is required. Before that can be done, a list of all tweets is needed. So first all, need to go through all the tweets in the corpus and build a new list of just tweet strings. After building the list of tweet strings, use ```CountVectorizer()``` to transform it into a vector by using the ```vectorizer.fit_transform(corpus)``` function. Whilst doing this, we need to also keep track of the labels of each tweet.
 
-# In[28]:
+# In[6]:
 
 
 from sklearn.feature_extraction.text import CountVectorizer
@@ -357,26 +357,115 @@ class CountVectorCorpus:
             y_list.append(_sentiment)
 
         vect_corp = self.vectorizer.fit_transform(x_list)
-
-        vc = vect_corp[1]
-
-        print(x_list[1])
-        print(y_list[1])
-        print(vect_corp[1])
         return x_list, y_list, vect_corp
 
 
 cvc = CountVectorCorpus(c)
-
-
 # print(cvc.vector_corpus[0])
+
+
+# # TF IDF
+#
+#
+
+# In[7]:
+
+
+from sklearn.feature_extraction.text import TfidfTransformer
+
+tfidf_transformer = TfidfTransformer()
+X_train_tfidf = tfidf_transformer.fit_transform(cvc.vector_corpus)
+X_train_tfidf.shape
+
+# # Naive bayes
+
+# In[8]:
+
+
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfTransformer
+
+
+class MultinomialNaiveBayesClassifier:
+
+    def __init__(self, count_vector):
+
+        # Flag to see if model has been trained
+        self.trained = False
+
+        self.x_train_tfidf = None
+        self.count_vector = count_vector
+        self.tfidf_transformer = None
+
+        self.model = None
+
+    def train(self):
+        self.tfidf_transformer = TfidfTransformer()
+        self.x_train_tfidf = self.tfidf_transformer.fit_transform(self.count_vector.vector_corpus)
+
+        self.model = MultinomialNB().fit(self.x_train_tfidf, self.count_vector.labels_list)
+        self.trained = True
+
+    def classify_tweet(self, tweet):
+
+        document = tweet.tweet
+        document = [document]
+
+        if self.trained == False:
+            self.train()
+
+        tfidf_transformer = TfidfTransformer()
+
+        x_new_counts = self.count_vector.vectorizer.transform(document)
+        x_new_tfidf = self.tfidf_transformer.transform(x_new_counts)
+
+        predicted = self.model.predict(x_new_tfidf)
+
+        for doc, category in zip(document, predicted):
+            return str(category)
+
+
+naiveBayesClassifier = MultinomialNaiveBayesClassifier(cvc)
+naiveBayesClassifier.train()
+naive_bayes_model = naiveBayesClassifier.model
+
+docs_new = Tweet(
+    '071288451742262774	negative	Missed @atmosphere at Soundset due to tornado. Now they are going to in DSM tomorrow. Do i want to put up with crowds and spend $45 more?',
+    wnLemmatizer)
+
+result = naiveBayesClassifier.classify_tweet(docs_new)
+print(result)
+
+
+# clf = MultinomialNB().fit(X_train_tfidf, cvc.labels_list)
+
+
+# # Predictions
+
+# In[9]:
+
+
+# docs_new = ['God is love', 'OpenGL on the GPU is fast', "fuck this shit", "I am so happy right now", "something is wrong"]
+# X_new_counts = cvc.vectorizer.transform(docs_new)
+# X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+
+# predicted = clf.predict(X_new_tfidf)
+
+# for doc, category in zip(docs_new, predicted):
+#     print('%r => %s' % (doc, category))
+
+
+# In[ ]:
+
+
+# In[ ]:
 
 
 # # Lexicon classifier class
 #
 # This classifier uses the word's positive and negative ratings to work out the overall sentiment. The method ```classify_tweet(Tweet)``` takes the Tweet class as an argument. It extracts the Tweet's text and then classifies it.
 
-# In[7]:
+# In[10]:
 
 
 class LexiconClassifier:
@@ -421,7 +510,7 @@ lc = LexiconClassifier(ws)
 #
 # Class for loading the test sets. It accepts the **file_name** and the **classifier** as arguments. It returns the dictionary of the predictions.
 
-# In[8]:
+# In[11]:
 
 
 class TestData:
@@ -443,7 +532,7 @@ class TestData:
         for _id in td:
             _tweet = td[_id]
             classification = self.classifier.classify_tweet(_tweet)
-            results_dict[str(_id)] = classification[1]
+            results_dict[str(_id)] = classification
 
         return results_dict
 
@@ -455,29 +544,27 @@ class TestData:
 # In[ ]:
 
 
-# In[ ]:
+# In[12]:
 
 
-# In[9]:
-
-
-for classifier in ['lex_classifier', 'myclassifier2',
+for classifier in ['lex_classifier', 'naive_bayes',
                    'myclassifier3']:  # You may rename the names of the classifiers to something more descriptive
 
-    valFound = False
+    # Used for Multinomial Naive Bayes classifier
+    count_vector = CountVectorCorpus(c)
+    naiveBayesClassifier = MultinomialNaiveBayesClassifier(count_vector)
 
     if classifier == 'lex_classifier':
+        print('Training is NOT required for: ' + classifier)
+
+    elif classifier == 'naive_bayes':
         print('Training ' + classifier)
-        # TODO: extract features for training classifier1
-        # TODO: train sentiment classifier1
-    elif classifier == 'myclassifier2':
-        print('Training ' + classifier)
-        # TODO: extract features for training classifier2
-        # TODO: train sentiment classifier2
+
     elif classifier == 'myclassifier3':
         print('Training ' + classifier)
         # TODO: extract features for training classifier3
-        # TODO: train sentiment classifier3
+        # TODO: train sentiment classifier
+        naiveBayesClassifier.train()
 
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
@@ -486,7 +573,7 @@ for classifier in ['lex_classifier', 'myclassifier2',
                        '742616104384772304': 'neutral', '102313285628711403': 'neutral',
                        '653274888624828198': 'neutral'}  # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
 
-        if classifier == 'lex_classifier':
+        if classifier == 'lex_lassifier':
             test_corpus = Corpus(testset)
             test_corpus.load_corpus()
             test_corpus.parse_corpus()
@@ -494,8 +581,15 @@ for classifier in ['lex_classifier', 'myclassifier2',
             td1 = TestData(testset, test_corpus, lc)
             predictions = td1.run_classifier()
 
-        elif classifier == 'myclassifier2':
-            pass
+        elif classifier == 'naive_bayes':
+            test_corpus = Corpus(testset)
+            test_corpus.load_corpus()
+            test_corpus.parse_corpus()
+
+            td2 = TestData(testset, test_corpus, naiveBayesClassifier)
+            predictions = td2.run_classifier()
+            print(predictions)
+
         elif classifier == 'myclassifier3':
             pass
         #         print(predictions)
@@ -505,7 +599,7 @@ for classifier in ['lex_classifier', 'myclassifier2',
 
         evaluation.confusion(predictions, testset, classifier)
 
-# In[10]:
+# In[ ]:
 
 
 tok = TweetTokenizer()
@@ -515,7 +609,7 @@ t2 = "@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end
 
 tok.tokenize(t2)
 
-# In[11]:
+# In[ ]:
 
 
 import pickle
@@ -538,7 +632,7 @@ else:
 
 print(my_list)
 
-# In[12]:
+# In[ ]:
 
 
 from sklearn.feature_extraction.text import CountVectorizer
