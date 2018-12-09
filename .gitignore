@@ -2,6 +2,8 @@
 *.pyc
 
 exercise2/glove
+glove.twitter.27B.200d.txt
+exercise2/glove.twitter.27B.200d.txt
 
 *.ipynb_checkpoints/*
 .ipynb_checkpoints
