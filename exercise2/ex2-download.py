@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding: utf-8
 
 # # NLTK Path
@@ -35,7 +34,7 @@ from os.path import normpath
 import os
 
 # TODO: load training data
-FILE_NAME = "./twitter-dev-data.txt"
+FILE_NAME = "./twitter-training-data.txt"
 
 if os.path.isfile(FILE_NAME):
     print("The file has been found.")
@@ -95,16 +94,11 @@ class WordSentiment:
             _score = split_line[1]
             _score = float(_score)
 
-            #             if _score > 0:
-            #                 self.pos_words[_word] = _score
-            #             else:
-            #                 self.neg_words[_word] = _score
-
             self.all_words[_word] = _score
 
     def print_words_summary(self):
-        print(
-        "Positive count: {} Negative count: ".format(str(len(self.pos_words.keys()))), str(len(self.neg_words.keys())))
+        print("Positive count: {} Negative count: ".format(str(len(self.pos_words.keys()))),
+              str(len(self.neg_words.keys())))
 
 
 ws = WordSentiment(WORDS_FILE_NAME)
@@ -211,17 +205,18 @@ class Tweet:
 
 wnLemmatizer = WordNetLemmatizer()
 
-rt1 = "735752723159607191	positive	Shay with Bentley and Bella, in their sunday best https://google.co.uk :) http://t.co/SUMZBSTrkW hello"
-rt2 = "529243425878060644	negative	Dear MSM, CNN bitches, every election one turning point..there you go again I will not use my opponents youth & NOW \"basket of deplorables\""
-rt3 = "348472267247705036	negative	@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
+# rt1 = "735752723159607191	positive	Shay with Bentley and Bella, in their sunday best https://google.co.uk :) http://t.co/SUMZBSTrkW hello"
+# rt2 = "529243425878060644	negative	Dear MSM, CNN bitches, every election one turning point..there you go again I will not use my opponents youth & NOW \"basket of deplorables\""
+# rt3 = "348472267247705036	negative	@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
 
-t1 = Tweet(rt1, wnLemmatizer)
-t2 = Tweet(rt2, wnLemmatizer)
-t3 = Tweet(rt3, wnLemmatizer)
+# t1 = Tweet(rt1, wnLemmatizer)
+# t2 = Tweet(rt2, wnLemmatizer)
+# t3 = Tweet(rt3, wnLemmatizer)
 
-print(t1)
-print(t2)
-print(t3)
+# print(t1)
+# print(t2)
+# print(t3)
+
 
 # # Corpus
 #
@@ -371,11 +366,12 @@ cvc = CountVectorCorpus(c)
 # In[7]:
 
 
-from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.feature_extraction.text import TfidfTransformer
 
-tfidf_transformer = TfidfTransformer()
-X_train_tfidf = tfidf_transformer.fit_transform(cvc.vector_corpus)
-X_train_tfidf.shape
+# tfidf_transformer = TfidfTransformer()
+# X_train_tfidf = tfidf_transformer.fit_transform(cvc.vector_corpus)
+# X_train_tfidf.shape
+
 
 # # Naive bayes
 
@@ -436,36 +432,180 @@ docs_new = Tweet(
 result = naiveBayesClassifier.classify_tweet(docs_new)
 print(result)
 
-
 # clf = MultinomialNB().fit(X_train_tfidf, cvc.labels_list)
 
 
-# # Predictions
+# # Glove word embedding
+#
+# Glove word embedding's Twitter dataset is being used. From that, the file called ```glove.twitter.27B.25d.txt``` in particular is being used.
+#
+# The **GloveTwitterWordEmbedding** class is responsible for loading up the file and parsing the dataset. It'll also be responsible for converting each word and sentence into a vector and list of vectors that can then be passed onto the most appropriate machine learning algorithm.
+#
+# After the embeddings have been loaded and parsed, ```get_embeddings_for_sentence(self, sentence)``` can be used for passing on a sentence and getting the embeddings value. In this instance, **sum** function has been used to convert the embeddings for every single word in the sentence into a single vector represening the whole sentence.
 
 # In[9]:
 
 
-# docs_new = ['God is love', 'OpenGL on the GPU is fast', "fuck this shit", "I am so happy right now", "something is wrong"]
-# X_new_counts = cvc.vectorizer.transform(docs_new)
-# X_new_tfidf = tfidf_transformer.transform(X_new_counts)
+import numpy as np
 
-# predicted = clf.predict(X_new_tfidf)
+GLOVE_FILE_NAME = "glove.twitter.27B.25d.txt"
 
-# for doc, category in zip(docs_new, predicted):
-#     print('%r => %s' % (doc, category))
 
+class GloveTwitterWordEmbedding:
+
+    def __init__(self, file_name):
+
+        self.file_name = file_name
+        self.file_data = None
+
+        if os.path.isfile(file_name):
+            print("The Glove Word Embedding file has been found.")
+        else:
+            raise IOError("File not found: Glove Twitter Embedding file with filename: {}".format(file_name))
+
+        self.embeddings = {}
+
+        self.file_loaded = False
+        self.file_parsed = False
+
+        self.process_file()
+
+    def load_file(self):
+
+        with open(self.file_name, "r", encoding="utf8") as f:
+            self.file_data = f.readlines()
+            self.loaded_file = True
+
+    def process_file(self):
+
+        if self.file_loaded == False:
+            self.load_file()
+
+        for i in range(len(self.file_data)):
+            _emb = self.file_data[i]
+            _emb_parts = _emb.split()
+
+            # Storing the word embeddings in a dictionary where the key is the word and the value is
+            # a numpy array of the word embedding vector.
+            self.embeddings[str(_emb_parts[0])] = np.array(_emb_parts[1:], dtype=np.float32)
+
+        self.file_parsed = True
+
+    def get_embeddings_for_sentence(self, sentence):
+
+        _embeddings = []
+
+        _words = sentence.split()
+        for i in range(len(_words)):
+
+            _embedding = np.array(
+                [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+                dtype=np.float32)
+            if str(_words[i]) in self.embeddings:
+                _embedding = self.embeddings[str(_words[i])]
+
+            _embeddings.append(_embedding)
+
+        _embeddings = np.array(_embeddings, dtype=np.float32)
+        _emb_sum = np.sum(_embeddings, axis=0, dtype=np.float32)
+
+        return _emb_sum.tolist()
+
+
+word_embedding = GloveTwitterWordEmbedding(GLOVE_FILE_NAME)
+
+# In[10]:
+
+
+word_embedding.get_embeddings_for_sentence("hello world")
+
+# # Word embedding, SVM classifier
+#
+# Using SVM with word embedding as the third (final) classifier.
+
+# In[21]:
+
+
+from sklearn import svm
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+
+
+class SVMClassifier:
+
+    def __init__(self, original_corpus, word_embedding):
+        self.original_corpus = original_corpus
+        self.word_embedding = word_embedding
+
+        self.train_x = []
+        self.train_y = []
+
+        self.model = None
+
+        self.prepare_data()
+
+    def prepare_data(self):
+        _tweets = self.original_corpus.processed_dict
+
+        target_dict = {
+            "negative": 0.,
+            "neutral": 1.,
+            "positive": 2.
+        }
+
+        for _id in _tweets:
+            _tweet = _tweets[_id]
+            _sentiment = _tweet.sentiment
+            _tweet_str = _tweet.tweet
+
+            _tweet_embedding_vector = self.word_embedding.get_embeddings_for_sentence(_tweet_str)
+
+            self.train_x.append(_tweet_embedding_vector)
+            self.train_y.append(target_dict[_sentiment])
+
+    def train(self):
+        self.model = svm.SVC(gamma="scale", decision_function_shape="ovo")
+        self.model.fit(self.train_x, self.train_y)
+
+    # #         self.model = OneVsRestClassifier(estimator=SVC(gamma='scale', random_state=0))
+    # # #         print(self.train_x[:5])
+    # # #         print(self.train_y[:5])
+    # #         self.model.fit(self.train_x, self.train_y)
+    #         classif = OneVsRestClassifier(estimator=SVC(gamma='scale',
+    #                                                     random_state=0))
+    #         classif.fit(self.train_x, self.train_y)
+    #         self.model = classif
+
+    def classify_tweet(self, tweet):
+        _tweet_str = tweet.tweet
+        _embedding = self.word_embedding.get_embeddings_for_sentence(_tweet_str)
+
+        prediction = self.model.predict(_embedding)
+        print(prediction)
+
+        return prediction
+
+
+my_svm = SVMClassifier(c, word_embedding)
+
+# In[22]:
+
+
+my_svm.train()
 
 # In[ ]:
 
 
-# In[ ]:
+svm.classify_tweet(Tweet(
+    "147713180324524046	negative	@SimpplyA TMILLS is going to Tucson! But the 29th and it's on a Thursday :(",
+    wnLemmatizer))
 
 
 # # Lexicon classifier class
 #
 # This classifier uses the word's positive and negative ratings to work out the overall sentiment. The method ```classify_tweet(Tweet)``` takes the Tweet class as an argument. It extracts the Tweet's text and then classifies it.
 
-# In[10]:
+# In[ ]:
 
 
 class LexiconClassifier:
@@ -496,7 +636,7 @@ class LexiconClassifier:
         else:
             sentiment = "negative"
 
-        return score, str(sentiment)
+        return str(sentiment)
 
 
 # Declaring the lexicon Classifier
@@ -510,7 +650,7 @@ lc = LexiconClassifier(ws)
 #
 # Class for loading the test sets. It accepts the **file_name** and the **classifier** as arguments. It returns the dictionary of the predictions.
 
-# In[11]:
+# In[ ]:
 
 
 class TestData:
@@ -537,14 +677,11 @@ class TestData:
         return results_dict
 
 
-# td1 = TestData(testsets.testsets[0], c, lc)
-# td1.run_classifier()
-
+# # Main classification
+#
+# The code below is part of the skeleton code that was provided in ```classification.py``` file.
 
 # In[ ]:
-
-
-# In[12]:
 
 
 for classifier in ['lex_classifier', 'naive_bayes',
@@ -569,11 +706,10 @@ for classifier in ['lex_classifier', 'naive_bayes',
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
 
-        predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral',
-                       '742616104384772304': 'neutral', '102313285628711403': 'neutral',
-                       '653274888624828198': 'neutral'}  # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
+        #         predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral', '742616104384772304': 'neutral', '102313285628711403': 'neutral', '653274888624828198': 'neutral'} # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
+        predictions = {}
 
-        if classifier == 'lex_lassifier':
+        if classifier == 'lex_classifier':
             test_corpus = Corpus(testset)
             test_corpus.load_corpus()
             test_corpus.parse_corpus()
@@ -588,12 +724,9 @@ for classifier in ['lex_classifier', 'naive_bayes',
 
             td2 = TestData(testset, test_corpus, naiveBayesClassifier)
             predictions = td2.run_classifier()
-            print(predictions)
 
         elif classifier == 'myclassifier3':
             pass
-        #         print(predictions)
-        #         predictions = {}
 
         evaluation.evaluate(predictions, testset, classifier)
 
@@ -602,62 +735,58 @@ for classifier in ['lex_classifier', 'naive_bayes',
 # In[ ]:
 
 
-tok = TweetTokenizer()
+# tok = TweetTokenizer()
 
-t1 = "\"#Obergefell, Marriage Equality and Islam in the West http://t.co/NoQlB3g6t0 #IslaminAmerica #marriageequality\""
-t2 = "@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
+# t1 = "\"#Obergefell, Marriage Equality and Islam in the West http://t.co/NoQlB3g6t0 #IslaminAmerica #marriageequality\""
+# t2 = "@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
 
-tok.tokenize(t2)
+# tok.tokenize(t2)
+
 
 # In[ ]:
 
 
-import pickle
+# import pickle
 
-list_pkl_name = "parrot.pkl"
+# list_pkl_name = "parrot.pkl"
 
-my_list = []
+# my_list = []
 
-if os.path.isfile(list_pkl_name):
-    # Files exists so read it
-    print("Reading pickle")
-    with open(list_pkl_name, 'rb') as f:
-        my_list = pickle.load(f)
-else:
-    # Create it and save it
-    print("writing pickle")
-    my_list = ["hello", "world", "from", "argha"]
-    with open(list_pkl_name, 'wb') as f:
-        pickle.dump(my_list, f)
+# if os.path.isfile(list_pkl_name):
+#     # Files exists so read it
+#     print("Reading pickle")
+#     with open(list_pkl_name, 'rb') as f:
+#         my_list = pickle.load(f)
+# else:
+#     # Create it and save it
+#     print("writing pickle")
+#     my_list = ["hello", "world", "from", "argha"]
+#     with open(list_pkl_name, 'wb') as f:
+#         pickle.dump(my_list, f)
 
-print(my_list)
+# print(my_list)
+
 
 # In[ ]:
 
 
-from sklearn.feature_extraction.text import CountVectorizer
+# from sklearn.feature_extraction.text import CountVectorizer
+# corpus = [
+#     'This is the first document.',
+#     'This document is the second document.',
+#     'And this is the third one.',
+#     'Is this the first document?',
+# ]
 
-corpus = [
-    'This is the first document.',
-    'This document is the second document.',
-    'And this is the third one.',
-    'Is this the first document?',
-]
+# corpus = [
+#     "Hello World",
+#     "Hi World",
+#     "World Hello"
+# ]
 
-corpus = [
-    "Hello World",
-    "Hi World",
-    "World Hello"
-]
+# vectorizer = CountVectorizer()
+# X = vectorizer.fit_transform(corpus)
+# print(vectorizer.get_feature_names())
 
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(corpus)
-print(vectorizer.get_feature_names())
-
-print(X.toarray())
-
-# In[ ]:
-
-
-
+# print(X.toarray())
 
