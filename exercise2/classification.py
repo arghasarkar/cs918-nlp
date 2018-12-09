@@ -506,8 +506,6 @@ class GloveTwitterWordEmbedding:
 # In[29]:
 
 
-word_embedding.get_embeddings_for_sentence("hello world")
-
 # # Word embedding, SVM classifier
 #
 # Using SVM with word embedding as the third (final) classifier.
