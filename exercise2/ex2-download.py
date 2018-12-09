@@ -122,21 +122,27 @@ ws.print_words_summary()
 
 import re
 
+from nltk.stem import WordNetLemmatizer
+
 tokenizer = TweetTokenizer()
 
 
 class Tweet:
 
-    def __init__(self, raw_str):
+    def __init__(self, raw_str, lemmatizer):
         self.raw_str = raw_str
         self.id, self.sentiment, self.tweet = self.parse_raw_tweet()
 
         self.parsed_tweet = ""
         self.tokens = []
 
+        self.lemmatizer = lemmatizer
+
         # Methods to run
         self.preprocess_tweet()
 
+        # Post tokenized string
+        self.tok_str = ""
         # Tokenize preprocessed tweet
         self.tokenize()
 
@@ -160,6 +166,9 @@ class Tweet:
         # Substitute emojis
         self._preprocess_substitute_emojis()
 
+        # Lemmatize
+        self._preprocess_lemmatize()
+
         # Remove non-alphanumeric characters
         self._preprocess_remove_all_non_alphanumeric_chars()
 
@@ -179,29 +188,40 @@ class Tweet:
     def _preprocess_remove_all_non_alphanumeric_chars(self):
         self.tweet = re.sub(r'[^\sa-zA-Z0-9]', ' ', self.tweet)
 
+    def _preprocess_lemmatize(self):
+        lemmatizer = self.lemmatizer
+        words = self.tweet.split()
+        for i in range(len(words)):
+            words[i] = lemmatizer.lemmatize(words[i])
+
+        self.tweet = " ".join(words)
+
     def tokenize(self):
         self.tokens = tokenizer.tokenize(self.tweet)
+        self.tok_str = " ".join(self.tokens)
 
     def __str__(self):
         return ("Tweet ID: {} -- Sentiment: {} -- Tweet: {} \n Tokens: {}\n".format(str(self.id), self.sentiment,
-                                                                                    self.tweet, self.tokens))
+                                                                                    self.tok_str, self.tokens))
 
 
 # # '''
 # # Test code below. IGNORE -------
 # # '''
-# rt1 = "735752723159607191	positive	Shay with Bentley and Bella, in their sunday best https://google.co.uk :) http://t.co/SUMZBSTrkW hello"
-# rt2 = "529243425878060644	negative	Dear MSM, CNN bitches, every election one turning point..there you go again I will not use my opponents youth & NOW \"basket of deplorables\""
-# rt3 = "348472267247705036	negative	@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
 
-# t1 = Tweet(rt1)
-# t2 = Tweet(rt2)
-# t3 = Tweet(rt3)
+wnLemmatizer = WordNetLemmatizer()
 
-# print(t1)
-# print(t2)
-# print(t3)
+rt1 = "735752723159607191	positive	Shay with Bentley and Bella, in their sunday best https://google.co.uk :) http://t.co/SUMZBSTrkW hello"
+rt2 = "529243425878060644	negative	Dear MSM, CNN bitches, every election one turning point..there you go again I will not use my opponents youth & NOW \"basket of deplorables\""
+rt3 = "348472267247705036	negative	@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
 
+t1 = Tweet(rt1, wnLemmatizer)
+t2 = Tweet(rt2, wnLemmatizer)
+t3 = Tweet(rt3, wnLemmatizer)
+
+print(t1)
+print(t2)
+print(t3)
 
 # # Corpus
 #
@@ -218,9 +238,10 @@ from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
 
 class Corpus:
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, lemmatizer=WordNetLemmatizer()):
         # Private vars
         self._corpus_loaded = False
+        self.lemmatizer = lemmatizer
 
         self.file_path = file_path
 
@@ -256,7 +277,7 @@ class Corpus:
     def parse_corpus(self):
 
         for line in self.raw_docs:
-            _tweet = Tweet(line)
+            _tweet = Tweet(line, self.lemmatizer)
             _sentiment = _tweet.sentiment
             _id = _tweet.id
 
@@ -305,22 +326,57 @@ c.load_corpus()
 c.parse_corpus()
 c.print_summary_of_corpus()
 
-# In[ ]:
+# # Building a count vector
+#
+# For the second classifier, a count vector is required. Before that can be done, a list of all tweets is needed. So first all, need to go through all the tweets in the corpus and build a new list of just tweet strings. After building the list of tweet strings, use ```CountVectorizer()``` to transform it into a vector by using the ```vectorizer.fit_transform(corpus)``` function. Whilst doing this, we need to also keep track of the labels of each tweet.
+
+# In[28]:
 
 
-# In[6]:
+from sklearn.feature_extraction.text import CountVectorizer
 
 
-import pprint
+class CountVectorCorpus:
+
+    def __init__(self, original_corpus):
+        self.vectorizer = CountVectorizer()
+
+        self.original_corpus = original_corpus
+
+        self.tweets_list, self.labels_list, self.vector_corpus = self.build_list()
+
+    def build_list(self):
+        tweets = self.original_corpus.processed_dict
+
+        x_list = []
+        y_list = []
+        for _id in tweets:
+            tweet = tweets[_id]
+            _sentiment = tweet.sentiment
+            x_list.append(tweet.tok_str)
+            y_list.append(_sentiment)
+
+        vect_corp = self.vectorizer.fit_transform(x_list)
+
+        vc = vect_corp[1]
+
+        print(x_list[1])
+        print(y_list[1])
+        print(vect_corp[1])
+        return x_list, y_list, vect_corp
 
 
+cvc = CountVectorCorpus(c)
+
+
+# print(cvc.vector_corpus[0])
 
 
 # # Lexicon classifier class
 #
 # This classifier uses the word's positive and negative ratings to work out the overall sentiment. The method ```classify_tweet(Tweet)``` takes the Tweet class as an argument. It extracts the Tweet's text and then classifies it.
 
-# In[19]:
+# In[7]:
 
 
 class LexiconClassifier:
@@ -351,8 +407,6 @@ class LexiconClassifier:
         else:
             sentiment = "negative"
 
-        sentiment = "neutral"
-
         return score, str(sentiment)
 
 
@@ -367,7 +421,7 @@ lc = LexiconClassifier(ws)
 #
 # Class for loading the test sets. It accepts the **file_name** and the **classifier** as arguments. It returns the dictionary of the predictions.
 
-# In[20]:
+# In[8]:
 
 
 class TestData:
@@ -404,7 +458,7 @@ class TestData:
 # In[ ]:
 
 
-# In[29]:
+# In[9]:
 
 
 for classifier in ['lex_classifier', 'myclassifier2',
@@ -428,20 +482,24 @@ for classifier in ['lex_classifier', 'myclassifier2',
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
 
-        #         predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral', '742616104384772304': 'neutral', '102313285628711403': 'neutral', '653274888624828198': 'neutral'} # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
+        predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral',
+                       '742616104384772304': 'neutral', '102313285628711403': 'neutral',
+                       '653274888624828198': 'neutral'}  # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
 
-        test_corpus = Corpus(testset)
-        test_corpus.load_corpus()
-        test_corpus.parse_corpus()
-        #         test_corpus.print_summary_of_corpus()
+        if classifier == 'lex_classifier':
+            test_corpus = Corpus(testset)
+            test_corpus.load_corpus()
+            test_corpus.parse_corpus()
 
-        td1 = TestData(testset, test_corpus, lc)
-        predictions = td1.run_classifier()
-        # print(predictions)
+            td1 = TestData(testset, test_corpus, lc)
+            predictions = td1.run_classifier()
+
+        elif classifier == 'myclassifier2':
+            pass
+        elif classifier == 'myclassifier3':
+            pass
+        #         print(predictions)
         #         predictions = {}
-
-        #         if '163361196206957578' in predictions:
-        #             print("--------------------------------VAL FOUND-----------------------------------")
 
         evaluation.evaluate(predictions, testset, classifier)
 
@@ -456,6 +514,53 @@ t1 = "\"#Obergefell, Marriage Equality and Islam in the West http://t.co/NoQlB3g
 t2 = "@LifeNewsHQ CHIP defines a child at conception. Some Democrats want to end CHIP by folding it into Medicaid. Should… https://t.co/To21fCSHkO"
 
 tok.tokenize(t2)
+
+# In[11]:
+
+
+import pickle
+
+list_pkl_name = "parrot.pkl"
+
+my_list = []
+
+if os.path.isfile(list_pkl_name):
+    # Files exists so read it
+    print("Reading pickle")
+    with open(list_pkl_name, 'rb') as f:
+        my_list = pickle.load(f)
+else:
+    # Create it and save it
+    print("writing pickle")
+    my_list = ["hello", "world", "from", "argha"]
+    with open(list_pkl_name, 'wb') as f:
+        pickle.dump(my_list, f)
+
+print(my_list)
+
+# In[12]:
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+corpus = [
+    'This is the first document.',
+    'This document is the second document.',
+    'And this is the third one.',
+    'Is this the first document?',
+]
+
+corpus = [
+    "Hello World",
+    "Hi World",
+    "World Hello"
+]
+
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(corpus)
+print(vectorizer.get_feature_names())
+
+print(X.toarray())
 
 # In[ ]:
 
