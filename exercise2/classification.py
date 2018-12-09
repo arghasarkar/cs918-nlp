@@ -1,3 +1,12 @@
+# coding: utf-8
+
+# # NLTK Path
+#
+# The code cell below is used for setting the NLTK path on DCS machines and Joshua. On my personal computer where this assignment was done, I had downloaded the NLTK corpus using **nltk.download()**
+#
+
+# In[1]:
+
 
 import getpass
 
@@ -93,7 +102,6 @@ class WordSentiment:
 
 
 ws = WordSentiment(WORDS_FILE_NAME)
-ws.print_words_summary()
 
 # # Tweet class
 #
@@ -310,7 +318,6 @@ class Corpus:
 c = Corpus(FILE_NAME)
 c.load_corpus()
 c.parse_corpus()
-c.print_summary_of_corpus()
 
 # # Building a count vector
 #
@@ -347,26 +354,10 @@ class CountVectorCorpus:
 
 
 cvc = CountVectorCorpus(c)
-# print(cvc.vector_corpus[0])
-
-
-# # TF IDF
-#
-#
-
-# In[7]:
-
-
-# from sklearn.feature_extraction.text import TfidfTransformer
-
-# tfidf_transformer = TfidfTransformer()
-# X_train_tfidf = tfidf_transformer.fit_transform(cvc.vector_corpus)
-# X_train_tfidf.shape
-
 
 # # Naive bayes
 
-# In[8]:
+# In[7]:
 
 
 from sklearn.naive_bayes import MultinomialNB
@@ -412,16 +403,14 @@ class MultinomialNaiveBayesClassifier:
             return str(category)
 
 
-naiveBayesClassifier = MultinomialNaiveBayesClassifier(cvc)
-naiveBayesClassifier.train()
-naive_bayes_model = naiveBayesClassifier.model
+# naiveBayesClassifier = MultinomialNaiveBayesClassifier(cvc)
+# naiveBayesClassifier.train()
+# naive_bayes_model = naiveBayesClassifier.model
 
-docs_new = Tweet(
-    '071288451742262774	negative	Missed @atmosphere at Soundset due to tornado. Now they are going to in DSM tomorrow. Do i want to put up with crowds and spend $45 more?',
-    wnLemmatizer)
+# docs_new = Tweet('071288451742262774	negative	Missed @atmosphere at Soundset due to tornado. Now they are going to in DSM tomorrow. Do i want to put up with crowds and spend $45 more?', wnLemmatizer)
 
-result = naiveBayesClassifier.classify_tweet(docs_new)
-print(result)
+# result = naiveBayesClassifier.classify_tweet(docs_new)
+# print(result)
 
 # clf = MultinomialNB().fit(X_train_tfidf, cvc.labels_list)
 
@@ -434,7 +423,7 @@ print(result)
 #
 # After the embeddings have been loaded and parsed, ```get_embeddings_for_sentence(self, sentence)``` can be used for passing on a sentence and getting the embeddings value. In this instance, **sum** function has been used to convert the embeddings for every single word in the sentence into a single vector represening the whole sentence.
 
-# In[9]:
+# In[8]:
 
 
 import numpy as np
@@ -503,14 +492,11 @@ class GloveTwitterWordEmbedding:
         return _emb_sum
 
 
-# In[29]:
-
-
 # # Word embedding, SVM classifier
 #
 # Using SVM with word embedding as the third (final) classifier.
 
-# In[23]:
+# In[9]:
 
 
 from sklearn import svm
@@ -589,51 +575,11 @@ class SVMClassifier:
         return self.reverse_target_dict[prediction[0]]
 
 
-# In[24]:
-
-
-# my_svm.train()
-
-
-# In[25]:
-
-
-# print(my_svm.classify_tweet(Tweet("910335772112060797	positive	My moms under the hilarious impression that I'm spending my saturday loading & unloading furniture from trailers in natchitoches", wnLemmatizer)))
-
-
-# In[27]:
-
-
-# print(my_svm.model)
-
-
-# In[28]:
-
-
-# import pickle
-
-# my_svm_model_name = "my_svm_model.pkl"
-
-# my_model = None
-
-# if os.path.isfile(my_svm_model_name):
-#     # Files exists so read it
-#     print("Reading pickle")
-#     with open(my_svm_model_name, 'rb') as f:
-#         my_model = pickle.load(f)
-# else:
-#     # Create it and save it
-#     print("writing pickle")
-#     my_model = my_svm.model
-#     with open(my_svm_model_name, 'wb') as f:
-#         pickle.dump(my_model, f)
-
-
 # # Lexicon classifier class
 #
 # This classifier uses the word's positive and negative ratings to work out the overall sentiment. The method ```classify_tweet(Tweet)``` takes the Tweet class as an argument. It extracts the Tweet's text and then classifies it.
 
-# In[16]:
+# In[10]:
 
 
 class LexiconClassifier:
@@ -678,7 +624,7 @@ lc = LexiconClassifier(ws)
 #
 # Class for loading the test sets. It accepts the **file_name** and the **classifier** as arguments. It returns the dictionary of the predictions.
 
-# In[17]:
+# In[11]:
 
 
 class TestData:
@@ -709,7 +655,7 @@ class TestData:
 #
 # The code below is part of the skeleton code that was provided in ```classification.py``` file.
 
-# In[33]:
+# In[12]:
 
 
 import warnings
@@ -736,14 +682,10 @@ for classifier in ['lex_classifier', 'naive_bayes',
 
     elif classifier == 'svm':
         print('Training ' + classifier)
-        # TODO: extract features for training classifier3
-        # TODO: train sentiment classifier
         my_svm.train()
 
     for testset in testsets.testsets:
         # TODO: classify tweets in test set
-
-        #         predictions = {'163361196206957578': 'neutral', '768006053969268950': 'neutral', '742616104384772304': 'neutral', '102313285628711403': 'neutral', '653274888624828198': 'neutral'} # TODO: Remove this line, 'predictions' should be populated with the outputs of your classifier
         predictions = {}
 
         if classifier == 'lex_classifier':
@@ -774,5 +716,4 @@ for classifier in ['lex_classifier', 'naive_bayes',
         # Evaluation
         evaluation.evaluate(predictions, testset, classifier)
         evaluation.confusion(predictions, testset, classifier)
-
 
