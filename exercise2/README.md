@@ -10,6 +10,18 @@ Repository: https://github.com/hitesh915/sentimentstrength/
 
 Direct link: https://raw.githubusercontent.com/hitesh915/sentimentstrength/master/wordwithStrength.txt
 
+2) Use of glove for WordEmbeddings - This project uses glove for word embedding features. The embedding that's being used for this is the **Twitter** dataset.
+The twitter dataset has 4 files in it. The one being used here is called **glove.twitter.27B.200d.txt**. 
+
+**Usage instructions**
+ - Download the glove zip file and unzip it. 
+ - Copy the file **glove.twitter.27B.200d.txt** and place it in the same directory as this project. 
+
+Link to project: https://nlp.stanford.edu/projects/glove/
+
+Direct link to Glove Twitter's zip file: http://nlp.stanford.edu/data/glove.twitter.27B.zip
+
+
 # Source declarations
 
 Sources for code or ideas found online or other sources are mentioned here:
