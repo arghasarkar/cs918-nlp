@@ -333,7 +333,6 @@ class CountVectorCorpus:
 
     def __init__(self, original_corpus):
         self.vectorizer = CountVectorizer()
-
         self.original_corpus = original_corpus
 
         self.tweets_list, self.labels_list, self.vector_corpus = self.build_list()
@@ -378,6 +377,7 @@ class MultinomialNaiveBayesClassifier:
         self.model = None
 
     def train(self):
+
         self.tfidf_transformer = TfidfTransformer()
         self.x_train_tfidf = self.tfidf_transformer.fit_transform(self.count_vector.vector_corpus)
 
