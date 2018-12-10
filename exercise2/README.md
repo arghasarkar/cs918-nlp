@@ -21,6 +21,9 @@ Link to project: https://nlp.stanford.edu/projects/glove/
 
 Direct link to Glove Twitter's zip file: http://nlp.stanford.edu/data/glove.twitter.27B.zip
 
+# Pickles
+
+The SVM model has been provided as a pickle called ```my_svm_model.pkl```. If it is not provided, then the training time takes around 10 to 15 minutes. This file can also be renamed or deleted to enable training from scratch. 
 
 # Source declarations
 
